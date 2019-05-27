@@ -1,12 +1,23 @@
+TASKS
+
+Alter/review the Problem Formulation and check/document outcomes
+	- Aggregate dike ring 1 and 2
+	- Add Enviorenmentalist (?? possible)
+	- Add Transport Committe (?? possible)
+	- Add Rijkswaterstaat 
+
+
 Step by step approach for finding optimum solution per actor
 We will apply the Many-Objective Robust Decision Making (MORDM) framework for the The MORDM framework has been introduced by Kasprzyk et al. (2013), which consists of four steps:
 1. Policy problem formulation. This step requires determining which system elements and decision objectives are important and should be included in the simulation model. 
 
 --> Thus, we will run a sensitivity analysis on what policy levers/uncertainties are important in the model (maybe we can skip some policy options) 
+--> Assignments 7
 
 2. Generating alternatives. This step employs Many Objective Evolutionary Algorithms (MOEAs) (Coello Coello et al., 2007) to find a Pareto-approximate set of solutions, namely solutions for which it is impossible to improve a single objective without deteriorating the performance of at least one other objective, relative to a reference situation. Thus, by providing the best approximate set of Pareto optimal solutions, MOEAs allow displaying critical trade-offs emerging from alternative policies without a priori attributing preferences (or weights) to any of the decision objectives. 
 
 --> Here we find the solutions that score the best on the decision objectives. We can do this for the different actors which will have different decision objectives. Rijkswaterstaat wants the best for everybody while local communities are only focussed on their own town. When looking at the different towns/dike rings separately, we can induce information about what they care about and use that in negotiations 
+--> Assignment 7 interpretation
 
 3.Uncertainty analysis. In this step, the previously found Pareto optimal solutions are stress-tested under uncertainty to evaluate performance across a wide range of scenarios. Ideally, in this step, all previous assumptions related to, for example, parameter values, model structure and problem formulation are relaxed.
 --> for our case, uncertainty is mostly present in:
@@ -14,7 +25,23 @@ We will apply the Many-Objective Robust Decision Making (MORDM) framework for th
 	- ????
 
 --> for every pareto set, we should test if they are still within the pareto set under the influence of different input parameters. Probably we cannot run an uncertainty analysis for the whole input space (due to computational burden). How can we solve this?
+--> Assignments 6 
 
 4. Scenario Discovery. In this step, statistical clustering techniques are applied to the large dataset of model output generated in step 3. Scenario Discovery (Bryant & Lempert, 2010; Kwakkel & Jaxa-Rozen, 2016), uses the Patient Rule Induction Method (PRIM) (Friedman & Fisher, 1999) to find orthogonal subspaces in the model input space (i.e., the space spanned by the uncertain factors) for which the resulting output is substantially different from the typical model output. A subspace is described by subintervals for one or more uncertain factors. PRIM returns a series of increasingly smaller subspaces. This series presents a trade-off between coverage (percentage of the cases of interest captured by a given box) and density (number of cases of interest over the total number of cases of a given box). Users can select their preferred subspace based on this trade-off.
 
 --> here we are going to receive an overview of input parameters (policies) that end up to output parameters under the uncertainty of step 3 using PRIM
+
+--> Assignments 4 and 5
+
+5. DPS/Optimization
+
+--> Assignment 7 (MOEA)
+
+6. Optimization (MORDM)
+
+--> Assignment 8
+
+7. MORO Optimization
+
+--> Assignment 9
+
