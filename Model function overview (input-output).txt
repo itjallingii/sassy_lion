@@ -1,6 +1,6 @@
 Overview IJsel model
 
-- Input functions:
+- INPUT FUNCTIONS (funs_files)
 	- funs_hydrostat.py --> draws CDF functions for discharge? But where is the discharge input specified
 
 	- funs_generate_network.py generates the network of nodes (not really a network as in discrete, but specifies nodes to store information in it)
@@ -21,7 +21,7 @@ Overview IJsel model
 
 		output: outflow, breachflow, status_t2, tbr
 
-	- funs_economy.py:
+	- funs_economy.py: --> cost of raising dikes is considered here but not RfR measures WHY?
 		input: 
 			cost_fun(ratio, c, b, lambd, dikeinit, dikeincrease)
 			discount_fun(amount, rate, n)
@@ -30,6 +30,21 @@ Overview IJsel model
 			cost of raising dikes
 			discount due to planning period --> cost in the future are weighted as less then spending the money now
 			cost of evacuation
+
+- Model scripts
+	- 
+		def Muskingum(C1, C2, C3, Qn0_t1, Qn0_t0, Qn1_t0)
+		uses the The Muskingum Routing unit to model the flow of water.The Muskingum Routing calculates the discharge within a river or channel 		reach given the inflow hydrograph at the upstream end. The unit is based on the continuity equation and the Muskingum storage relationship 		(McCarthy G.T. (1938)).
+
+		Cross section details are not required and only the Muskingum parameters k and x are specified. Both parameters are fixed.
+
+		A minimum of two Muskingum Routing sections are required for each end of the river or channel reach.
+		Intermediate discharge points can be specified by using additional Muskingum Routing nodes. 
+
+		Model function:
+		def Muskingum(C1, C2, C3, Qn0_t1, Qn0_t0, Qn1_t0):
+    			Qn1_t1 = C1 * Qn0_t1 + C2 * Qn0_t0 + C3 * Qn1_t0
+    			return Qn1_t1
 			 
 
 - Output parameters
