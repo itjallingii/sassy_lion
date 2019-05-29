@@ -4,13 +4,22 @@ Created on Wed Mar 21 17:34:11 2018
 
 @author: ciullo
 """
+
+import numpy as np
+from operator import add
 from ema_workbench import (Model, CategoricalParameter,
                            ScalarOutcome, TimeSeriesOutcome, IntegerParameter, RealParameter)
 from dike_model_function import DikeNetwork  # @UnresolvedImport
 from dike_model_function_time_series import DikeNetworkTS  # @UnresolvedImport
 
+def sum_time_series(*args):
+    a = np.zeros(len(args[0]))
+    for b in args:
+        a = list(map(add,a,b))
+    return a
 
 def sum_over(*args):
+    print(sum(args))
     return sum(args)
 
 def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type='time_series'):
@@ -100,43 +109,35 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
 
         if problem_formulation_id == 1: # RWS
             dike_model.outcomes.clear()
-            dike_model.outcomes = [
-                TimeSeriesOutcome('Expected Annual Damage',
-                                variable_name=['{}_Expected Annual Damage {}'.format(dike, steps) 
-                                               for dike in function.dikelist for steps in function.planning_steps]),
-
-                TimeSeriesOutcome('Total Investment Costs',
-                                variable_name=['{}_Dike Investment Costs {}'.format(dike, steps) 
-                                               for dike in function.dikelist for steps in function.planning_steps]+
-                              ['RfR Total Costs {}'.format(steps) for steps in function.planning_steps]+
-                              ['Expected Evacuation Costs {}'.format(steps) for steps in function.planning_steps]),
-
-                TimeSeriesOutcome('Expected Number of Deaths',
-                                variable_name=['{}_Expected Number of Deaths {}'.format(dike, steps) 
-                                               for dike in function.dikelist for steps in function.planning_steps])] 
+            temp_outcomes = [TimeSeriesOutcome('{}_{}'.format(dike,name))
+                                  for dike in function.dikelist for name in [outcome_names[0], outcome_names[2]]]
+            temp_outcomes.append(TimeSeriesOutcome('Total Investment Costs',
+                                                   variable_name=['{}_Dike Investment Costs'.format(dike)
+                                                                 for dike in function.dikelist]+
+                                                   ['RfR Total Costs']+
+                                                   ['Expected Evacuation Costs'], function=sum_time_series))
+            
+            dike_model.outcomes = temp_outcomes
 
         elif problem_formulation_id == 2: # Environmental interest group
-            pass
+            dike_model.outcomes.clear()
+            dike_model.outcomes = [TimeSeriesOutcome('{}_{}'.format(dike,name))
+                                  for dike in function.dikelist for name in [outcome_names[0], outcome_names[2]]]
 
-        elif problem_formulation_id == 3: # Transport company
-            pass
+        elif problem_formulation_id == 3: # Transport company 
+            pass # ADD SOMETHING ABOUT RIVER FLOW AND DEPTH
 
         elif problem_formulation_id == 4: # Delta commission
             dike_model.outcomes.clear()
-            dike_model.outcomes = [
-                TimeSeriesOutcome('Expected Annual Damage',
-                                variable_name=['{}_Expected Annual Damage {}'.format(dike, steps) 
-                                               for dike in function.dikelist for steps in function.planning_steps]),
-
-                TimeSeriesOutcome('Total Investment Costs',
-                                variable_name=['{}_Dike Investment Costs {}'.format(dike, steps) 
-                                               for dike in function.dikelist for steps in function.planning_steps]+
-                              ['RfR Total Costs {}'.format(steps) for steps in function.planning_steps]+
-                              ['Expected Evacuation Costs {}'.format(steps) for steps in function.planning_steps]),
-
-                TimeSeriesOutcome('Expected Number of Deaths',
-                                variable_name=['{}_Expected Number of Deaths {}'.format(dike, steps) 
-                                               for dike in function.dikelist for steps in function.planning_steps])] 
+            temp_outcomes = [TimeSeriesOutcome('{}_{}'.format(dike,name))
+                                  for dike in function.dikelist for name in [outcome_names[0], outcome_names[2]]]
+            temp_outcomes.append(TimeSeriesOutcome('Total Investment Costs',
+                                                   variable_name=['{}_Dike Investment Costs'.format(dike)
+                                                                 for dike in function.dikelist]+
+                                                   ['RfR Total Costs']+
+                                                   ['Expected Evacuation Costs'], function=sum_time_series))
+            
+            dike_model.outcomes = temp_outcomes
 
         elif problem_formulation_id == 5: # GELDERLAND
             dike_model.outcomes.clear()
