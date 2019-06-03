@@ -9,8 +9,8 @@ import numpy as np
 from operator import add
 from ema_workbench import (Model, CategoricalParameter,
                            ScalarOutcome, TimeSeriesOutcome, IntegerParameter, RealParameter)
-from dike_model_function import DikeNetwork  # @UnresolvedImport
-from dike_model_function_time_series import DikeNetworkTS  # @UnresolvedImport
+
+from dike_model_function_V2_0 import (DikeNetwork,DikeNetworkTS)  # @UnresolvedImport
 
 def sum_time_series(*args):
     a = np.zeros(len(args[0]))
@@ -29,8 +29,11 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
     # Load the model:
     if outcome_type == 'time_series':
         function = DikeNetworkTS()
-    else:
+    elif outcome_type == 'scalar':
         function = DikeNetwork()
+    else:
+        raise TypeError("unknown outcome_type indentifier: try 'time_series' or 'scalar'")
+        
     # workbench model:
     dike_model = Model('dikesnet', function=function)
 
