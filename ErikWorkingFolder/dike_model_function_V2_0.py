@@ -91,7 +91,7 @@ class DikeNetwork(object):
             node = G.node[dike]
             # Rescale according to step and tranform in meters
             for s in steps:
-                node['DikeIncrease {}'.format(s)] *= self.dh
+                node['DikeIncrease {}'.format(dike,s)] *= self.dh
                 # 1 Initialize fragility curve
                 # 2 Shift it to the degree of dike heigthening:
                 # 3 Calculate cumulative raising
@@ -164,11 +164,10 @@ class DikeNetwork(object):
 
         # Dictionary storing outputs:
         data = {}
-        
         for s in self.planning_steps:
             for Qpeak in Qpeaks:
                 node = G.node['A.0']
-                waveshape_id = node['ID flood wave shape']
+                waveshape_id = = 1 # node['ID flood wave shape']
 
                 time = np.arange(0, node['Qevents_shape'].loc[waveshape_id].shape[0],
                              timestep)
