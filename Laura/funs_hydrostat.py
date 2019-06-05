@@ -9,28 +9,36 @@ import numpy as np
 
 #
 
+#executes whenever p_exc is called by model --ALL THE TIME !!!
+#returns a numpy array P
+#takes Xlist and A as argumenst: 
 
-def werklijn_cdf(Xlist, A):
+
+def werklijn_cdf( Xlist, A):
     '''  werklijn function: step-wise distribution of high discharges
     '''
 
     X = np.asarray(Xlist)
+
     nl = np.shape(A)[0]
-    a = A['a'].values
-    b = A['b'].values
+
+    a = A['a'].values  #CAN I TYPE DECLARE THESE AS Cnp ARRAYS?????
+    b = A['b'].values  #Here too??
     A['Q'].loc[nl + 1] = np.inf
-    XL = A['Q'].values
+    XL = A['Q'].values #HERE TOO???
 
     P = np.repeat(np.nan, np.size(X))
+
     for j in range(0, nl):
+
         indexlow = X >= XL[j]
         indexup = X < XL[j + 1]
         index = np.where((indexlow * indexup) == True)[0]
         P[index] = np.exp(-np.exp(-(X[index] - b[j]) / a[j]))
     return P
 
-
-def werklijn_inv(Plist, A):
+#maybe called only once by model???
+def werklijn_inv( Plist,  A):
     ''' inverse probability distribution function
     probability is translated to frequency.
     X is a piece-wise linear function of log(frequency)
@@ -44,15 +52,24 @@ def werklijn_inv(Plist, A):
     '''
 
     P = np.asarray(Plist)
+
+
+    
     nl = np.shape(A)[0]
     a = A['a'].values
     b = A['b'].values
     A['RP'].loc[nl + 1] = np.inf
     RPL = A['RP'].values
-    Fe = -np.log(P)
+
+
+    Fe = -np.log(P)  #IS THIS OKAY AS FLOAT??
     RP = 1 / Fe
 
-    X = np.repeat(np.nan, np.size(P))
+  
+    X  = np.repeat(np.nan, np.size(P))
+
+
+
     for j in range(0, nl):
         indexlow = RP >= RPL[j]
         indexup = RP < RPL[j + 1]
@@ -62,7 +79,7 @@ def werklijn_inv(Plist, A):
     return X
 
 
-def werklijn_pdf(Xlist, A):
+def werklijn_pdf(Xlist,  A):
     ''' pdf according to "werklijn"
     probability is translated to frequency.
     X is a piece-wise linear function of log(frequency)
@@ -78,6 +95,7 @@ def werklijn_pdf(Xlist, A):
     X = np.array(Xlist)
 
     nl = np.shape(A)[0]
+
     a = A['a'].values
     b = A['b'].values
     A['Q'].loc[nl + 1] = np.inf
@@ -85,6 +103,7 @@ def werklijn_pdf(Xlist, A):
 
     # derive P-values
     P = np.repeat(np.nan, np.size(X))
+
     for j in range(0, nl):
         indexlow = X >= XL[j]
         indexup = X < XL[j + 1]
@@ -94,6 +113,7 @@ def werklijn_pdf(Xlist, A):
     return P
 
 
+#WHEN IS THIS EVER CALLED????? hmmm...
 def rand_werklijn(A):
     ''' randomly sample from werklijn '''
     u = random.random()
