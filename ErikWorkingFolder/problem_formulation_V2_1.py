@@ -208,7 +208,7 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
                                 variable_name=['{}_Dike Investment Costs {}'.format(dike, steps) 
                                                for dike in function.dikelist[3:5] for steps in function.planning_steps], 
                               function=sum_over, kind=direction),
-                ScalarOutcome('Expected Number of Deaths in Gelderland',
+                ScalarOutcome('Expected Number of Deaths in Overijssel',
                                 variable_name=['{}_Expected Number of Deaths {}'.format(dike, steps) 
                                                for dike in function.dikelist[3:5] for steps in function.planning_steps],
                               function=sum_over, kind=direction),
