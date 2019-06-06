@@ -19,7 +19,7 @@ def sum_time_series(*args):
     return a
 
 def sum_over(*args):
-    print(sum(args))
+#     print(sum(args))
     return sum(args)
 
 def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type='time_series'):
@@ -72,7 +72,7 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
     for lev_name in rfr_lev:
         for n in function.planning_steps:
             lev_name_ = '{} {}'.format(lev_name, n)
-            uncertainties.append(IntegerParameter(lev_name, 0, 1))
+            uncertainties.append(IntegerParameter(lev_name_, 0, 1))
 
     # Early Warning System lever
     for lev_name in EWS_lev.keys():
