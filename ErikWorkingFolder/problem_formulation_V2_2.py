@@ -327,7 +327,37 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
                                                for dike in function.dikelist[0:2] for steps in function.planning_steps],
                               function=sum_over, kind=direction)]
 
-        elif problem_formulation_id == 8: # Dike ring 3
+        elif problem_formulation_id == 8: # Dike ring 1
+            dike_model.outcomes.clear()
+            dike_model.outcomes = [
+                ScalarOutcome('Expected Annual Damage A1', 
+                              variable_name=['A.1_Expected Annual Damage {}'.format(steps) 
+                                             for steps in function.planning_steps], function=sum_over, kind=direction),
+
+                ScalarOutcome('Investment Costs A1', 
+                              variable_name=['A.1_Dike Investment Costs {}'.format(steps) 
+                                             for steps in function.planning_steps], function=sum_over, kind=direction),
+
+                ScalarOutcome('Expected Number of Deaths in A1', 
+                              variable_name=['A.1_Expected Number of Deaths {}'.format(steps) 
+                                             for steps in function.planning_steps], function=sum_over, kind=direction)]
+            
+        elif problem_formulation_id == 9: # Dike ring 2
+            dike_model.outcomes.clear()
+            dike_model.outcomes = [
+                ScalarOutcome('Expected Annual Damage A2', 
+                              variable_name=['A.2_Expected Annual Damage {}'.format(steps) 
+                                             for steps in function.planning_steps], function=sum_over, kind=direction),
+
+                ScalarOutcome('Investment Costs A2', 
+                              variable_name=['A.2_Dike Investment Costs {}'.format(steps) 
+                                             for steps in function.planning_steps], function=sum_over, kind=direction),
+
+                ScalarOutcome('Expected Number of Deaths in A2', 
+                              variable_name=['A.2_Expected Number of Deaths {}'.format(steps) 
+                                             for steps in function.planning_steps], function=sum_over, kind=direction)]
+        
+        elif problem_formulation_id == 10: # Dike ring 3
             dike_model.outcomes.clear()
             dike_model.outcomes = [
                 ScalarOutcome('Expected Annual Damage A3', 
@@ -342,7 +372,7 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
                               variable_name=['A.5_Expected Number of Deaths {}'.format(steps) 
                                              for steps in function.planning_steps], function=sum_over, kind=direction)]
 
-        elif problem_formulation_id == 9: # Dike ring 4
+        elif problem_formulation_id == 11: # Dike ring 4
             dike_model.outcomes.clear()
             dike_model.outcomes = [
                 ScalarOutcome('Expected Annual Damage A4', 
@@ -357,7 +387,7 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
                               variable_name=['A.5_Expected Number of Deaths {}'.format(steps) 
                                              for steps in function.planning_steps], function=sum_over, kind=direction)]
 
-        elif problem_formulation_id == 10: # Dike ring 5
+        elif problem_formulation_id == 12: # Dike ring 5
             dike_model.outcomes.clear()
             dike_model.outcomes = [
                 ScalarOutcome('Expected Annual Damage A5', 
@@ -372,7 +402,7 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
                               variable_name=['A.5_Expected Number of Deaths {}'.format(steps) 
                                              for steps in function.planning_steps], function=sum_over, kind=direction)]
             
-        elif problem_formulation_id == 11: # Fully disaggregated
+        elif problem_formulation_id == 13: # Fully disaggregated
             dike_model.outcomes.clear()
             dike_model.outcomes = [
                 ScalarOutcome('Expected Annual Damage',
