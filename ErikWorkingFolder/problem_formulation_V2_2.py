@@ -19,7 +19,6 @@ def sum_time_series(*args):
     return a
 
 def sum_over(*args):
-    print(sum(args))
     return sum(args)
 
 def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type='time_series'):
