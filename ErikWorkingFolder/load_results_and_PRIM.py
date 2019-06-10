@@ -20,7 +20,6 @@ def load_tar(dike_names):
 	return results
 
 if __name__ == '__main__':
-	dike_names = ['A.1','A.2']
-	# dike_names = ['A.1','A.2','A.3','A.4','A.5']
+	dike_names = ['A.1','A.2','A.3','A.4','A.5']
 	results = load_tar(dike_names)
-	print(results)
+	print(results[key][1] for key in results.keys())

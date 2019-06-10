@@ -25,35 +25,18 @@ def make_models(dike_nums):
 	return models
 
 def run_models(model_dict, num_scenarios=1, num_policies=1):
-	results = {}
-
 	ema_logging.log_to_stderr(ema_logging.INFO)
 
 	for key in model_dict.keys():
-		with MultiprocessingEvaluator(model_dict[key][0]) as evaluator:
-			results[key] = evaluator.perform_experiments(
+		with MultiprocessingEvaluator(model_dict[key][0],n_processes = 10) as evaluator:
+			results = evaluator.perform_experiments(
 	        	scenarios=num_scenarios, policies=num_policies, reporting_frequency=50)
-	return results
-
-def get_experiments_and_outcomes(results):
-	experiments = {}
-	outcomes = {}
-	for key in results.keys():
-		experiments[key] = results[key][0]
-		outcomes[key] = results[key][1]
-
-	return experiments, outcomes
-
-def save_results_as_tar(results):
-	for key in results.keys():
-		save_results(results[key], '{}_results.tar.gz'.format(key))
+			save_results(results, '{}_results.tar.gz'.format(key))
+	return
 
 if __name__ == '__main__':
-	dike_nums = [1,2]
-	# dike_nums = [1,2,3,4,5]
-	n_scenarios = 2
-	n_policies = 2
+	dike_nums = [1,2,3,4,5]
+	n_scenarios = 150
+	n_policies = 150
 	models = make_models(dike_nums)
-	results = run_models(models, num_scenarios=n_scenarios, num_policies=n_policies)
-	experiments, outcomes = get_experiments_and_outcomes(results)
-	save_results_as_tar(results)
+	run_models(models, num_scenarios=n_scenarios, num_policies=n_policies)
