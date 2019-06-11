@@ -24,7 +24,6 @@ def load_tar(dike_names):
 def get_exp_and_outcomes(results):
 	experiments = {}
 	outcomes = {}
-	print(results['A.1'][1])
 	for key in results.keys():
 		experiments[key] = results[key][0]
 		outcomes[key] = results[key][1]
@@ -43,22 +42,20 @@ def do_PRIM(experiments, outcomes, outcome_name='Expected Annual Damage'):
 	box_uncert = {}
 	box_levers = {}
 
-	for key in experiments.keys():
+	for key in experiments.keys():-
 		uncert[key] = experiments[key].drop(experiments[key].columns[16:-2], axis=1)
 		levers[key] = experiments[key].iloc[:,16:-1]
 		data[key] = outcomes[key][outcome_name+' '+key.replace('.','')]
 
-		# print(outcomes[key])
-
-		y[key] = data[key] < np.percentile(data[key], 10)
+		y[key] = data[key] > np.percentile(data[key], 90)
 
 		prim_alg_uncert[key] = prim.Prim(uncert[key], y[key], threshold=0.6)
 		prim_alg_levers[key] = prim.Prim(levers[key], y[key], threshold=0.6)
 
-		box_uncert[key] = prim_alg_uncert.find_box()
-		box_levers[key] = prim_alg_levers.find_box()
+		box_uncert[key] = prim_alg_uncert[key].find_box()
+		box_levers[key] = prim_alg_levers[key].find_box()
 
-	return
+	return box_uncert, box_levers
 
 if __name__ == '__main__':
 	dike_names = ['A.1','A.2','A.3','A.4','A.5']
