@@ -42,7 +42,7 @@ def do_PRIM(experiments, outcomes, outcome_name='Expected Annual Damage'):
 	box_uncert = {}
 	box_levers = {}
 
-	for key in experiments.keys():-
+	for key in experiments.keys():
 		uncert[key] = experiments[key].drop(experiments[key].columns[16:-2], axis=1)
 		levers[key] = experiments[key].iloc[:,16:-1]
 		data[key] = outcomes[key][outcome_name+' '+key.replace('.','')]
