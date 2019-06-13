@@ -10,7 +10,7 @@ from operator import add
 from ema_workbench import (Model, CategoricalParameter,
                            ScalarOutcome, TimeSeriesOutcome, IntegerParameter, RealParameter)
 
-from dike_model_function_V2_0 import (DikeNetwork,DikeNetworkTS)  # @UnresolvedImport
+from dike_model_function import (DikeNetwork,DikeNetworkTS)  # @UnresolvedImport
 
 def sum_time_series(*args):
     a = np.zeros(len(args[0]))
