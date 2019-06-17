@@ -8,7 +8,7 @@ Created on Wed Mar 21 17:34:11 2018
 import numpy as np
 from operator import add
 from ema_workbench import (Model, CategoricalParameter,
-                           ScalarOutcome, TimeSeriesOutcome, IntegerParameter, RealParameter)
+                           ScalarOutcome, TimeSeriesOutcome, IntegerParameter, RealParameter, Constant)
 
 from dike_model_function_V2_0 import (DikeNetwork,DikeNetworkTS)  # @UnresolvedImport
 
@@ -19,10 +19,10 @@ def sum_time_series(*args):
     return a
 
 def sum_over(*args):
-    print(sum(args))
+    #print(sum(args))
     return sum(args)
 
-def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type='time_series'):
+def get_model_for_problem_formulation(problem_formulation_id,outcome_type='time_series', direction = ScalarOutcome.MINIMIZE):
     ''' Prepare DikeNetwork in a way it can be input in the EMA-workbench.
     Specify uncertainties, levers and problem formulation.
     '''
@@ -53,11 +53,13 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
     # Series of five Room for the River projects:
     rfr_lev = ['{}_RfR'.format(project_id) for project_id in range(0, 5)]
 
+
     # Time of warning: 0, 1, 2, 3, 4 days ahead from the flood
     EWS_lev = {'EWS_DaysToThreat': [0, 4]}  # days
 
     uncertainties = []
     levers = []
+    constants = []
 
     for uncert_name in cat_uncert.keys():
         categories = cat_uncert[uncert_name]
@@ -70,9 +72,16 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
 
     # RfR levers can be either 0 (not implemented) or 1 (implemented)
     for lev_name in rfr_lev:
-        for n in function.planning_steps:
-            lev_name_ = '{} {}'.format(lev_name, n)
-            levers.append(IntegerParameter(lev_name_, 0, 1))
+       for n in function.planning_steps:
+            if '4' or '5' in lev_name:
+                lev_name_ = '{} {}'.format(lev_name, n)
+                levers.append(IntegerParameter(lev_name_, 0,2))
+            elif '1' or '2' or '3' in lev_name :
+                lev_name_ = '{} {}'.format(lev_name, n)
+                levers.append(IntegerParameter(lev_name_, 0,4))
+
+    
+
 
     # Early Warning System lever
     for lev_name in EWS_lev.keys():
@@ -94,17 +103,27 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
         # location-related levers in the form: locationName_leversName
         for lev_name in dike_lev.keys():
             for n in function.planning_steps:
-                name = "{}_{} {}".format(dike, lev_name, n)
-                levers.append(IntegerParameter(name, dike_lev[lev_name][0],
-                                           dike_lev[lev_name][1]))
+                if  n == 0:
+                    name = "{}_{} {}".format(dike, lev_name, n)
+                    constants.append(Constant(name, 0))
+                elif '1' or '2' or '3' in lev_name:
+                    name = "{}_{} {}".format(dike, lev_name, n)
+                    constants.append(Constant(name, 4))
+                elif '4' or '5' in lev_name:
+                    name = "{}_{} {}".format(dike, lev_name, n)
+                    constants.append(Constant(name, 2))
+
 
     # load uncertainties and levers in dike_model:
     dike_model.uncertainties = uncertainties
     dike_model.levers = levers
+    dike_model.constants = constants
 
     # Problem formulations:
     # Outcomes are all costs, thus they have to minimized:
-    direction = ScalarOutcome.MINIMIZE
+    #direction = ScalarOutcome.MINIMIZE
+    #direction = ScalarOutcome.MAXIMIZE #to optimize for perfect storm/worst cases etc
+    direction = direction
     
     if outcome_type == 'time_series':
         outcome_names = ['Expected Annual Damage','Dike Investment Costs','Expected Number of Deaths',

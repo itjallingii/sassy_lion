@@ -8,7 +8,7 @@ Created on Wed Mar 21 17:34:11 2018
 import numpy as np
 from operator import add
 from ema_workbench import (Model, CategoricalParameter,
-                           ScalarOutcome, TimeSeriesOutcome, IntegerParameter, RealParameter,Constant)
+                           ScalarOutcome, TimeSeriesOutcome, IntegerParameter, RealParameter, Constant)
 
 from dike_model_function_V2_0 import (DikeNetwork,DikeNetworkTS)  # @UnresolvedImport
 
@@ -19,9 +19,10 @@ def sum_time_series(*args):
     return a
 
 def sum_over(*args):
+    #print(sum(args))
     return sum(args)
 
-def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type='time_series'):
+def get_model_for_problem_formulation(problem_formulation_id,outcome_type='time_series', direction = ScalarOutcome.MINIMIZE):
     ''' Prepare DikeNetwork in a way it can be input in the EMA-workbench.
     Specify uncertainties, levers and problem formulation.
     '''
@@ -36,16 +37,11 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
     # workbench model:
     dike_model = Model('dikesnet', function=function)
 
-    #specify 'insenitivities' from sobol, as constants in the model
-    constant_Brate = {'Brate': 1.5} #for all dike rings
-    #constant_Bmax = 'Bmax' #only for dike ring A.5
-
     # Uncertainties and Levers:
     # Specify uncertainties range:
-    Real_uncert = { 'pfail': [0, 1]}  # m and [.]
-    Bmax_uncert ={'Bmax': [30, 350]}
+    Real_uncert = {'Bmax': [30, 350], 'pfail': [0, 1]}  # m and [.]
     # breach growth rate [m/day]
-    #cat_uncert_loc = {'Brate': (1., 1.5, 10)}
+    cat_uncert_loc = {'Brate': (1., 1.5, 10)}
 
     cat_uncert = {'discount rate {}'.format(n): (1.5, 2.5, 3.5, 4.5)
                     for n in function.planning_steps}
@@ -56,6 +52,7 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
 
     # Series of five Room for the River projects:
     rfr_lev = ['{}_RfR'.format(project_id) for project_id in range(0, 5)]
+
 
     # Time of warning: 0, 1, 2, 3, 4 days ahead from the flood
     EWS_lev = {'EWS_DaysToThreat': [0, 4]}  # days
@@ -75,9 +72,16 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
 
     # RfR levers can be either 0 (not implemented) or 1 (implemented)
     for lev_name in rfr_lev:
-        for n in function.planning_steps:
-            lev_name_ = '{} {}'.format(lev_name, n)
-            levers.append(IntegerParameter(lev_name_, 0, 1))
+       for n in function.planning_steps:
+            if n > 0:
+                lev_name_ = '{} {}'.format(lev_name, n)
+                constants.append(Constant(lev_name_, 0))
+            elif n == 0 and  '3' in lev_name :
+                lev_name_ = '{} {}'.format(lev_name, n)
+                constants.append(Constant(lev_name_, 1))
+
+    
+
 
     # Early Warning System lever
     for lev_name in EWS_lev.keys():
@@ -88,30 +92,27 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
         # uncertainties in the form: locationName_uncertaintyName
         for uncert_name in Real_uncert.keys():
             name = "{}_{}".format(dike, uncert_name)
-            lower,upper = Real_uncert[uncert_name]
-            uncertainties.append(RealParameter(name,lower,upper))
+            lower, upper = Real_uncert[uncert_name]
+            uncertainties.append(RealParameter(name, lower, upper))
 
-        if '5' not in dike:
-            for uncert_name in Bmax_uncert.keys():
-                name = "{}_{}".format(dike, uncert_name)
-                lower,upper = Bmax_uncert[uncert_name]
-                uncertainties.append(RealParameter(name,lower,upper))
-        else:
-            name = "{}_{}".format(dike, 'Bmax')
-            constants.append(Constant(name,175))
-
-        for uncert_name in constant_Brate.keys():
+        for uncert_name in cat_uncert_loc.keys():
             name = "{}_{}".format(dike, uncert_name)
-            constants.append(Constant(name, 1.5))
-
-
+            categories = cat_uncert_loc[uncert_name]
+            uncertainties.append(CategoricalParameter(name, categories))
 
         # location-related levers in the form: locationName_leversName
         for lev_name in dike_lev.keys():
             for n in function.planning_steps:
-                name = "{}_{} {}".format(dike, lev_name, n)
-                levers.append(IntegerParameter(name, dike_lev[lev_name][0],
-                                           dike_lev[lev_name][1]))
+                if  n == 0:
+                    name = "{}_{} {}".format(dike, lev_name, n)
+                    constants.append(Constant(name, 0))
+                elif '1' or '2' or '3' in lev_name:
+                    name = "{}_{} {}".format(dike, lev_name, n)
+                    constants.append(Constant(name, 4))
+                elif '4' or '5' in lev_name:
+                    name = "{}_{} {}".format(dike, lev_name, n)
+                    constants.append(Constant(name, 2))
+
 
     # load uncertainties and levers in dike_model:
     dike_model.uncertainties = uncertainties
@@ -120,7 +121,9 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
 
     # Problem formulations:
     # Outcomes are all costs, thus they have to minimized:
-    direction = ScalarOutcome.MINIMIZE
+    #direction = ScalarOutcome.MINIMIZE
+    #direction = ScalarOutcome.MAXIMIZE #to optimize for perfect storm/worst cases etc
+    direction = direction
     
     if outcome_type == 'time_series':
         outcome_names = ['Expected Annual Damage','Dike Investment Costs','Expected Number of Deaths',
@@ -343,37 +346,7 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
                                                for dike in function.dikelist[0:2] for steps in function.planning_steps],
                               function=sum_over, kind=direction)]
 
-        elif problem_formulation_id == 8: # Dike ring 1
-            dike_model.outcomes.clear()
-            dike_model.outcomes = [
-                ScalarOutcome('Expected Annual Damage A1', 
-                              variable_name=['A.1_Expected Annual Damage {}'.format(steps) 
-                                             for steps in function.planning_steps], function=sum_over, kind=direction),
-
-                ScalarOutcome('Investment Costs A1', 
-                              variable_name=['A.1_Dike Investment Costs {}'.format(steps) 
-                                             for steps in function.planning_steps], function=sum_over, kind=direction),
-
-                ScalarOutcome('Expected Number of Deaths in A1', 
-                              variable_name=['A.1_Expected Number of Deaths {}'.format(steps) 
-                                             for steps in function.planning_steps], function=sum_over, kind=direction)]
-            
-        elif problem_formulation_id == 9: # Dike ring 2
-            dike_model.outcomes.clear()
-            dike_model.outcomes = [
-                ScalarOutcome('Expected Annual Damage A2', 
-                              variable_name=['A.2_Expected Annual Damage {}'.format(steps) 
-                                             for steps in function.planning_steps], function=sum_over, kind=direction),
-
-                ScalarOutcome('Investment Costs A2', 
-                              variable_name=['A.2_Dike Investment Costs {}'.format(steps) 
-                                             for steps in function.planning_steps], function=sum_over, kind=direction),
-
-                ScalarOutcome('Expected Number of Deaths in A2', 
-                              variable_name=['A.2_Expected Number of Deaths {}'.format(steps) 
-                                             for steps in function.planning_steps], function=sum_over, kind=direction)]
-        
-        elif problem_formulation_id == 10: # Dike ring 3
+        elif problem_formulation_id == 8: # Dike ring 3
             dike_model.outcomes.clear()
             dike_model.outcomes = [
                 ScalarOutcome('Expected Annual Damage A3', 
@@ -388,7 +361,7 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
                               variable_name=['A.5_Expected Number of Deaths {}'.format(steps) 
                                              for steps in function.planning_steps], function=sum_over, kind=direction)]
 
-        elif problem_formulation_id == 11: # Dike ring 4
+        elif problem_formulation_id == 9: # Dike ring 4
             dike_model.outcomes.clear()
             dike_model.outcomes = [
                 ScalarOutcome('Expected Annual Damage A4', 
@@ -403,7 +376,7 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
                               variable_name=['A.5_Expected Number of Deaths {}'.format(steps) 
                                              for steps in function.planning_steps], function=sum_over, kind=direction)]
 
-        elif problem_formulation_id == 12: # Dike ring 5
+        elif problem_formulation_id == 10: # Dike ring 5
             dike_model.outcomes.clear()
             dike_model.outcomes = [
                 ScalarOutcome('Expected Annual Damage A5', 
@@ -418,7 +391,7 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
                               variable_name=['A.5_Expected Number of Deaths {}'.format(steps) 
                                              for steps in function.planning_steps], function=sum_over, kind=direction)]
             
-        elif problem_formulation_id == 13: # Fully disaggregated
+        elif problem_formulation_id == 11: # Fully disaggregated
             dike_model.outcomes.clear()
             dike_model.outcomes = [
                 ScalarOutcome('Expected Annual Damage',
