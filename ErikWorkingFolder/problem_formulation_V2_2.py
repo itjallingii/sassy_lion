@@ -8,7 +8,7 @@ Created on Wed Mar 21 17:34:11 2018
 import numpy as np
 from operator import add
 from ema_workbench import (Model, CategoricalParameter,
-                           ScalarOutcome, TimeSeriesOutcome, IntegerParameter, RealParameter)
+                           ScalarOutcome, TimeSeriesOutcome, IntegerParameter, RealParameter,Constant)
 
 from dike_model_function_V2_0 import (DikeNetwork,DikeNetworkTS)  # @UnresolvedImport
 
@@ -36,11 +36,16 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
     # workbench model:
     dike_model = Model('dikesnet', function=function)
 
+    #specify 'insenitivities' from sobol, as constants in the model
+    constant_Brate = {'Brate': 1.5} #for all dike rings
+    #constant_Bmax = 'Bmax' #only for dike ring A.5
+
     # Uncertainties and Levers:
     # Specify uncertainties range:
-    Real_uncert = {'Bmax': [30, 350], 'pfail': [0, 1]}  # m and [.]
+    Real_uncert = { 'pfail': [0, 1]}  # m and [.]
+    Bmax_uncert ={'Bmax': [30, 350]}
     # breach growth rate [m/day]
-    cat_uncert_loc = {'Brate': (1., 1.5, 10)}
+    #cat_uncert_loc = {'Brate': (1., 1.5, 10)}
 
     cat_uncert = {'discount rate {}'.format(n): (1.5, 2.5, 3.5, 4.5)
                     for n in function.planning_steps}
@@ -57,6 +62,7 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
 
     uncertainties = []
     levers = []
+    constants = []
 
     for uncert_name in cat_uncert.keys():
         categories = cat_uncert[uncert_name]
@@ -82,13 +88,23 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
         # uncertainties in the form: locationName_uncertaintyName
         for uncert_name in Real_uncert.keys():
             name = "{}_{}".format(dike, uncert_name)
-            lower, upper = Real_uncert[uncert_name]
-            uncertainties.append(RealParameter(name, lower, upper))
+            lower,upper = Real_uncert[uncert_name]
+            uncertainties.append(RealParameter(name,lower,upper))
 
-        for uncert_name in cat_uncert_loc.keys():
+        if '5' not in dike:
+            for uncert_name in Bmax_uncert.keys():
+                name = "{}_{}".format(dike, uncert_name)
+                lower,upper = Bmax_uncert[uncert_name]
+                uncertainties.append(RealParameter(name,lower,upper))
+        else:
+            name = "{}_{}".format(dike, 'Bmax')
+            constants.append(Constant(name,175))
+
+        for uncert_name in constant_Brate.keys():
             name = "{}_{}".format(dike, uncert_name)
-            categories = cat_uncert_loc[uncert_name]
-            uncertainties.append(CategoricalParameter(name, categories))
+            constants.append(Constant(name, 1.5))
+
+
 
         # location-related levers in the form: locationName_leversName
         for lev_name in dike_lev.keys():
@@ -100,6 +116,7 @@ def get_model_for_actor_problem_formulation(problem_formulation_id,outcome_type=
     # load uncertainties and levers in dike_model:
     dike_model.uncertainties = uncertainties
     dike_model.levers = levers
+    dike_model.constants = constants
 
     # Problem formulations:
     # Outcomes are all costs, thus they have to minimized:

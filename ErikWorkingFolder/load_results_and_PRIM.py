@@ -17,7 +17,7 @@ from ema_workbench.analysis import prim
 def load_tar(dike_names):
 	results = {}
 	for name in dike_names:
-		results[name] = load_results('{}_results.tar.gz'.format(name))
+		results[name] = load_results('{}_results_1.tar.gz'.format(name)) # CHANGE FROM 'results_1' TO 'results' DEPENDING ON CASE 
 
 	return results
 
@@ -32,7 +32,7 @@ def get_exp_and_outcomes(results):
 
 	return experiments, outcomes
 
-def do_PRIM(experiments, outcomes, outcome_name='Expected Annual Damage'):
+def do_PRIM(experiments, outcomes, outcome_name='Expected Annual Damage', key='A.1', thresh=0.5, alpha=0.05, perc=90):
 	uncert = {}
 	levers = {}
 	data = {}
@@ -42,18 +42,19 @@ def do_PRIM(experiments, outcomes, outcome_name='Expected Annual Damage'):
 	box_uncert = {}
 	box_levers = {}
 
-	for key in experiments.keys():
-		uncert[key] = experiments[key].drop(experiments[key].columns[16:-2], axis=1)
-		levers[key] = experiments[key].iloc[:,16:-1]
-		data[key] = outcomes[key][outcome_name+' '+key.replace('.','')]
+	uncert[key] = experiments[key].iloc[:,:19]
+	levers[key] = experiments[key].iloc[:,20:-3]
+	data[key] = outcomes[key][outcome_name+' '+key.replace('.','')]
 
-		y[key] = data[key] > np.percentile(data[key], 90)
+	#### CHANGE BACK TO 90 FOR A2-5 (OR 99.5 FOR A1) 
+	y[key] = data[key] > np.percentile(data[key], perc) 
 
-		prim_alg_uncert[key] = prim.Prim(uncert[key], y[key], threshold=0.6)
-		prim_alg_levers[key] = prim.Prim(levers[key], y[key], threshold=0.6)
+	# prim_alg_uncert[key] = prim.Prim(uncert[key], y[key], threshold=thresh, peel_alpha=alpha, obj_function=prim.PRIMObjectiveFunctions.LENIENT2)
+	prim_alg_uncert[key] = prim.Prim(uncert[key], y[key], threshold=thresh, peel_alpha=alpha)
+	prim_alg_levers[key] = prim.Prim(levers[key], y[key], threshold=thresh, peel_alpha=alpha)
 
-		box_uncert[key] = prim_alg_uncert[key].find_box()
-		box_levers[key] = prim_alg_levers[key].find_box()
+	box_uncert[key] = prim_alg_uncert[key].find_box()
+	box_levers[key] = prim_alg_levers[key].find_box()
 
 	return box_uncert, box_levers
 
